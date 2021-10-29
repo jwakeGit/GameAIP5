@@ -72,7 +72,50 @@ class Individual_Grid(object):
         right = width - 1
         for y in range(height):
             for x in range(left, right):
-                pass
+                if random.random() < 0.1:
+                    choice = random.random()
+                    if genome[y][x] == "-":
+                        if y == 15:
+                            if choice < 0.05:
+                                if genome[y][x-1] == "X":
+                                    genome[y][x-1] = "-"
+                                    genome[y][x] = "X"
+                                elif genome[y][x+1] == "X":
+                                    genome[y][x+1] = "-"
+                                    genome[y][x] = "X"
+                    elif genome[y][x] == "?" or genome[y][x] == "M":
+                        if choice < 0.33:
+                            new_x = floor(8*choice)
+                            genome[y][new_x] = genome[y][x]
+                            genome[y][x] = "-"
+                        elif choice < 0.66:
+                            new_y = floor(2*choice)
+                            genome[new_y][x] = genome[y][x]
+                            genome[y][x] = "-"
+                        elif genome[y][x] == "?": genome[y][x] = "M"
+                        elif genome[y][x] == "M": genome[y][x] = "?"
+                    elif genome[y][x] == "o":
+                        if choice < 0.5:
+                            new_x = floor(8*choice)
+                            genome[y][new_x] = genome[y][x]
+                            genome[y][x] = "-"
+                        else:
+                            new_y = floor(2*choice)
+                            genome[new_y][x] = genome[y][x]
+                            genome[y][x] = "-"
+                    elif genome[y][x] == "|":
+                        i = y
+                        while genome[i][x] != "T": i -= 1
+                        if choice < 0.33:
+                            genome[i-1][x] = "T"
+                            genome[i][x] = "|"
+                        elif choice < 0.66:
+                            genome[i+1][x] = "T"
+                            genome[i][x] = "-"
+                    elif genome[y][x] == "T":
+                        if choice < 0.5:
+                            genome[y-1][x] = "T"
+                            genome[y][x] = "|"
         return genome
 
     # Create zero or more children from self and other
@@ -86,8 +129,10 @@ class Individual_Grid(object):
             for x in range(left, right):
                 # STUDENT Which one should you take?  Self, or other?  Why?
                 # STUDENT consider putting more constraints on this to prevent pipes in the air, etc
-                pass
+                if x < width/2: new_genome[y][x] = self.genome[y][x]
+                else: new_genome[y][x] = other.genome[y][x] #single-point crossover
         # do mutation; note we're returning a one-element tuple here
+        mutate()
         return (Individual_Grid(new_genome),)
 
     # Turn the genome into a level string (easy for this genome)
