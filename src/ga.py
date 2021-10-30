@@ -392,6 +392,35 @@ def generate_successors(population):
     results = []
     # STUDENT Design and implement this
     # Hint: Call generate_children() on some individuals and fill up results.
+    # Roulette Wheel Selection
+    roulette_winner = None
+    sum_of_fitnesses = 0
+    for each in population:
+        sum_of_fitnesses += each.fitness()
+    bias = 0
+    pop_dict = {}
+    for each in population:
+        probability = bias + (each.fitness() / sum_of_fitnesses)
+        pop_dict[each] = probability
+        bias += probability
+    r = random.uniform(0, bias)
+    for each in population:
+        if pop_dict[each] > r:
+            break
+        roulette_winner = each
+    print("R winner is", roulette_winner)
+
+    # Tournament Selection
+    tournament_winner = None
+    k_value = int(random.uniform(1, len(population)))
+    print("k_value is", k_value)
+    randomly_chosen = random.choices(population, k=k_value)
+    randomly_chosen = sorted(randomly_chosen, key=lambda population: population.fitness(), reverse=True)
+    tournament_winner = randomly_chosen[0]
+
+    if tournament_winner is not None and roulette_winner is not None:
+        results.append(roulette_winner.generate_children(tournament_winner)[0])
+        results.append(tournament_winner.generate_children(roulette_winner)[0])
     return results
 
 
