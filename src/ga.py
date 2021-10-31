@@ -85,22 +85,22 @@ class Individual_Grid(object):
                                     genome[y][x] = "X"
                     elif genome[y][x] == "?" or genome[y][x] == "M":
                         if choice < 0.33:
-                            new_x = floor(8*choice)
+                            new_x = math.floor(8*choice)
                             genome[y][new_x] = genome[y][x]
                             genome[y][x] = "-"
                         elif choice < 0.66:
-                            new_y = floor(2*choice)
+                            new_y = math.floor(2*choice)
                             genome[new_y][x] = genome[y][x]
                             genome[y][x] = "-"
                         elif genome[y][x] == "?": genome[y][x] = "M"
                         elif genome[y][x] == "M": genome[y][x] = "?"
                     elif genome[y][x] == "o":
                         if choice < 0.5:
-                            new_x = floor(8*choice)
+                            new_x = math.floor(8*choice)
                             genome[y][new_x] = genome[y][x]
                             genome[y][x] = "-"
                         else:
-                            new_y = floor(2*choice)
+                            new_y = math.floor(2*choice)
                             genome[new_y][x] = genome[y][x]
                             genome[y][x] = "-"
                     elif genome[y][x] == "|":
@@ -132,8 +132,8 @@ class Individual_Grid(object):
                 if x < width/2: new_genome[y][x] = self.genome[y][x]
                 else: new_genome[y][x] = other.genome[y][x] #single-point crossover
         # do mutation; note we're returning a one-element tuple here
-        mutate()
-        return (Individual_Grid(new_genome),)
+        #mutate()
+        return (Individual_Grid(self.mutate(new_genome)))
 
     # Turn the genome into a level string (easy for this genome)
     def to_level(self):

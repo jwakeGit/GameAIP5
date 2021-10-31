@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="6193545c-3cd6-4f7f-8386-030f2b69920a" name="Changes" comment="" />
+    <list default="true" id="6193545c-3cd6-4f7f-8386-030f2b69920a" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/ga.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/ga.py" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -36,7 +39,8 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1635542975201</updated>
-      <workItem from="1635542977049" duration="8091000" />
+      <workItem from="1635542977049" duration="8197000" />
+      <workItem from="1635717390026" duration="1888000" />
     </task>
     <servers />
   </component>
