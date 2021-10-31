@@ -394,26 +394,26 @@ def generate_successors(population):
     # Hint: Call generate_children() on some individuals and fill up results.
     # Roulette Wheel Selection
     roulette_winner = None
+    smallest_fitness = 0
+    for each in population:
+        if smallest_fitness > each.fitness():
+            smallest_fitness = each.fitness()
+    smallest_fitness = smallest_fitness * -1
+    bias_dict = {}
+    for each in population:
+        bias_dict[each] = each.fitness() + smallest_fitness
     sum_of_fitnesses = 0
-    for each in population:
-        sum_of_fitnesses += each.fitness()
-    bias = 0
-    pop_dict = {}
-    for each in population:
-        probability = bias + (each.fitness() / sum_of_fitnesses)
-        pop_dict[each] = probability
-        bias += probability
-    r = random.uniform(0, bias)
-    for each in population:
-        if pop_dict[each] > r:
+    for each in bias_dict.values():
+        sum_of_fitnesses += each
+    r = random.uniform(0, sum_of_fitnesses)
+    for key, value in bias_dict.items():
+        if value > r:
             break
-        roulette_winner = each
-    print("R winner is", roulette_winner)
+        roulette_winner = key
 
     # Tournament Selection
     tournament_winner = None
     k_value = int(random.uniform(1, len(population)))
-    print("k_value is", k_value)
     randomly_chosen = random.choices(population, k=k_value)
     randomly_chosen = sorted(randomly_chosen, key=lambda population: population.fitness(), reverse=True)
     tournament_winner = randomly_chosen[0]
