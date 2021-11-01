@@ -70,22 +70,27 @@ class Individual_Grid(object):
 
         left = 1
         right = width - 1
-        for y in reversed(range(height)):
+        for y in range(height):
             for x in range(left, right):
-                if x >= width - 3:
-                    pass
-                if random.random() < 0.1:
+                if random.random() < 0.3:
                     choice = random.random()
+                    if y == 15 and x < width - 3:
+                        if genome[y][x] != "-" and genome[y][x+1] != "-":
+                            if random.random() < 0.02:
+                                genome[y][x] = "-"
+                                genome[y-1][x] = "-"
+                                genome[y-2][x] = "-"
+                    """
                     if genome[y][x] == "-":
-                        if y == 15:
-                            if choice < 0.05:
-                                if genome[y][x-1] == "X":
-                                    genome[y][x-1] = "-"
-                                    genome[y][x] = "X"
-                                elif genome[y][x+1] == "X":
-                                    genome[y][x+1] = "-"
-                                    genome[y][x] = "X"
-                    elif genome[y][x] == "?" or genome[y][x] == "M":
+                        if choice < 0.05:
+                            if genome[y][x-1] == "X":
+                                genome[y][x-1] = "-"
+                                genome[y][x] = "X"
+                            elif genome[y][x+1] == "X":
+                                genome[y][x+1] = "-"
+                                genome[y][x] = "X"
+                    """
+                    if genome[y][x] == "?" or genome[y][x] == "M":
                         if choice < 0.33:
                             new_x = offset_by_upto(x, width / 8, min=1, max=width - 2)
                             genome[y][new_x] = genome[y][x]
@@ -121,8 +126,6 @@ class Individual_Grid(object):
                         else:
                             genome[y+1][x] = "T"
                             genome[y][x] = "-"
-                if genome[14][x] == "X":
-                    genome[14][x] == "-"
         return genome
 
     # Create zero or more children from self and other
