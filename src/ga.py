@@ -131,6 +131,7 @@ class Individual_Grid(object):
     # Create zero or more children from self and other
     def generate_children(self, other):
         new_genome = copy.deepcopy(self.genome)
+        new_genomeb = copy.deepcopy(other.genome)
         # Leaving first and last columns alone...
         # do crossover with other
         left = 1
@@ -138,11 +139,12 @@ class Individual_Grid(object):
         rand_interval = random.randint(left, right)
         for x in range(left, right):
             for y in range(height): 
-                if x < rand_interval: new_genome[y][x] = self.genome[y][x]
-                else: new_genome[y][x] = other.genome[y][x]
+                new_genome[y][x] = self.genome[y][x]
+                new_genomeb[y][x] = other.genome[y][x]
         # do mutation; note we're returning a one-element tuple here
         #mutate()
-        return (Individual_Grid(self.mutate(new_genome)))
+        return (Individual_Grid(self.mutate(new_genome)), Individual_Grid(self.mutate(new_genomeb)))
+
 
     # Turn the genome into a level string (easy for this genome)
     def to_level(self):
@@ -249,6 +251,8 @@ class Individual_DE(object):
         # STUDENT For example, too many stairs are unaesthetic.  Let's penalize that
         if len(list(filter(lambda de: de[1] == "6_stairs", self.genome))) > 5:
             penalties -= 2
+        if len(list(filter(lambda de: de[1] == "2_enemy", self.genome))) > 10:
+            penalties -= 2
         # STUDENT If you go for the FI-2POP extra credit, you can put constraint calculation in here too and cache it in a new entry in __slots__.
         self._fitness = sum(map(lambda m: coefficients[m] * measurements[m],
                                 coefficients)) + penalties
@@ -262,7 +266,7 @@ class Individual_DE(object):
     def mutate(self, new_genome):
         # STUDENT How does this work?  Explain it in your writeup.
         # STUDENT consider putting more constraints on this, to prevent generating weird things
-        if random.random() < 0.1 and len(new_genome) > 0:
+        if random.random() < 0.2 and len(new_genome) > 0:
             to_change = random.randint(0, len(new_genome) - 1)
             de = new_genome[to_change]
             new_de = de
@@ -341,8 +345,14 @@ class Individual_DE(object):
 
     def generate_children(self, other):
         # STUDENT How does this work?  Explain it in your writeup.
-        pa = random.randint(0, len(self.genome) - 1)
-        pb = random.randint(0, len(other.genome) - 1)
+        if len(self.genome) > 0:
+            pa = random.randint(0, len(self.genome) - 1)
+        else:
+            pa = 0
+        if len(other.genome) > 0:
+            pb = random.randint(0, len(other.genome) - 1)
+        else:
+            pb = 0
         a_part = self.genome[:pa] if len(self.genome) > 0 else []
         b_part = other.genome[pb:] if len(other.genome) > 0 else []
         ga = a_part + b_part
@@ -351,6 +361,11 @@ class Individual_DE(object):
         gb = b_part + a_part
         # do mutation
         return Individual_DE(self.mutate(ga)), Individual_DE(self.mutate(gb))
+        #if random.randint(0, 1) == 0:
+        #    return Individual_DE(self.mutate(ga))
+        #else:
+        #    return Individual_DE(self.mutate(gb))
+        #return Individual_DE(self.mutate(ga))
 
     # Apply the DEs to a base level.
     def to_level(self):
@@ -454,10 +469,11 @@ def generate_successors(population):
     randomly_chosen = random.choices(population, k=k_value)
     randomly_chosen = sorted(randomly_chosen, key=lambda population: population.fitness(), reverse=True)
     tournament_winner = randomly_chosen[0]
-    
     if tournament_winner is not None and roulette_winner is not None:
-        results.append(roulette_winner.generate_children(tournament_winner))
-        results.append(tournament_winner.generate_children(roulette_winner))
+        for each in roulette_winner.generate_children(tournament_winner):
+            results.append(each)
+        for each in tournament_winner.generate_children(roulette_winner):
+            results.append(each)
     return results
 
 
@@ -472,7 +488,7 @@ def ga():
     with mpool.Pool(processes=os.cpu_count()) as pool:
         init_time = time.time()
         # STUDENT (Optional) change population initialization
-        population = [Individual.random_individual() if random.random() < 0.9
+        population = [Individual.random_individual() if random.random() < 0.8
                       else Individual.empty_individual()
                       for _g in range(pop_limit)]
         # But leave this line alone; we have to reassign to population because we get a new population that has more cached stuff in it.
@@ -500,7 +516,10 @@ def ga():
                             f.write("".join(row) + "\n")
                 generation += 1
                 # STUDENT Determine stopping condition
-                stop_condition = False
+                if generation == 100:
+                    stop_condition = True
+                else:
+                    stop_condition = False
                 if stop_condition:
                     break
                 # STUDENT Also consider using FI-2POP as in the Sorenson & Pasquier paper
