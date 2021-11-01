@@ -70,8 +70,10 @@ class Individual_Grid(object):
 
         left = 1
         right = width - 1
-        for y in range(height):
+        for y in reversed(range(height)):
             for x in range(left, right):
+                if x >= width - 3:
+                    pass
                 if random.random() < 0.1:
                     choice = random.random()
                     if genome[y][x] == "-":
@@ -119,7 +121,8 @@ class Individual_Grid(object):
                         else:
                             genome[y+1][x] = "T"
                             genome[y][x] = "-"
-                        
+                if genome[14][x] == "X":
+                    genome[14][x] == "-"
         return genome
 
     # Create zero or more children from self and other
