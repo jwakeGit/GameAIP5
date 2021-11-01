@@ -45,12 +45,12 @@ class Individual_Grid(object):
         # Default fitness function: Just some arbitrary combination of a few criteria.  Is it good?  Who knows?
         # STUDENT Modify this, and possibly add more metrics.  You can replace this with whatever code you like.
         coefficients = dict(
-            meaningfulJumpVariance=0.5,
-            negativeSpace=0.6,
-            pathPercentage=0.5,
-            emptyPercentage=0.6,
-            linearity=-0.5,
-            solvability=2.0
+            meaningfulJumpVariance=0.5, # 0.5
+            negativeSpace=0.6, # 0.6
+            pathPercentage=0.5, # 0.5
+            emptyPercentage=0.6, # 0.6
+            linearity=-0.5, # 0.5
+            solvability=2.0 # 2.0
         )
         self._fitness = sum(map(lambda m: coefficients[m] * measurements[m],
                                 coefficients))
@@ -85,37 +85,41 @@ class Individual_Grid(object):
                                     genome[y][x] = "X"
                     elif genome[y][x] == "?" or genome[y][x] == "M":
                         if choice < 0.33:
-                            new_x = math.floor(8*choice)
+                            new_x = offset_by_upto(x, width / 8, min=1, max=width - 2)
                             genome[y][new_x] = genome[y][x]
                             genome[y][x] = "-"
                         elif choice < 0.66:
-                            new_y = math.floor(2*choice)
+                            new_y = offset_by_upto(y, height / 2, min=0, max=height - 2)
                             genome[new_y][x] = genome[y][x]
                             genome[y][x] = "-"
                         elif genome[y][x] == "?": genome[y][x] = "M"
                         elif genome[y][x] == "M": genome[y][x] = "?"
                     elif genome[y][x] == "o":
                         if choice < 0.5:
-                            new_x = math.floor(8*choice)
+                            new_x = offset_by_upto(x, width / 8, min=1, max=width - 2)
                             genome[y][new_x] = genome[y][x]
                             genome[y][x] = "-"
                         else:
-                            new_y = math.floor(2*choice)
+                            new_y = offset_by_upto(y, height / 2, min=0, max=height - 2)
                             genome[new_y][x] = genome[y][x]
                             genome[y][x] = "-"
-                    elif genome[y][x] == "|":
-                        i = y
-                        while genome[i][x] != "T" and i > 0: i -= 1
-                        if choice < 0.33:
-                            genome[i-1][x] = "T"
-                            genome[i][x] = "|"
-                        elif choice < 0.66:
-                            genome[i+1][x] = "T"
-                            genome[i][x] = "-"
+                    # elif genome[y][x] == "|":
+                    #     i = y
+                    #     while genome[i][x] != "T" and i > 0: i -= 1
+                    #     if choice < 0.33:
+                    #         genome[i-1][x] = "T"
+                    #         genome[i][x] = "|"
+                    #     elif choice < 0.66:
+                    #         genome[i+1][x] = "T"
+                    #         genome[i][x] = "-"
                     elif genome[y][x] == "T":
-                        if choice < 0.5:
+                        if y > 8 and choice < 0.66:
                             genome[y-1][x] = "T"
                             genome[y][x] = "|"
+                        else:
+                            genome[y+1][x] = "T"
+                            genome[y][x] = "-"
+                        
         return genome
 
     # Create zero or more children from self and other
@@ -125,12 +129,11 @@ class Individual_Grid(object):
         # do crossover with other
         left = 1
         right = width - 1
-        for y in range(height):
-            for x in range(left, right):
-                # STUDENT Which one should you take?  Self, or other?  Why?
-                # STUDENT consider putting more constraints on this to prevent pipes in the air, etc
-                if x < width/2: new_genome[y][x] = self.genome[y][x]
-                else: new_genome[y][x] = other.genome[y][x] #single-point crossover
+        rand_interval = random.randint(left, right)
+        for x in range(left, right):
+            for y in range(height): 
+                if x < rand_interval: new_genome[y][x] = self.genome[y][x]
+                else: new_genome[y][x] = other.genome[y][x]
         # do mutation; note we're returning a one-element tuple here
         #mutate()
         return (Individual_Grid(self.mutate(new_genome)))
@@ -157,7 +160,33 @@ class Individual_Grid(object):
     def random_individual(cls):
         # STUDENT consider putting more constraints on this to prevent pipes in the air, etc
         # STUDENT also consider weighting the different tile types so it's not uniformly random
-        g = [random.choices(options, k=width) for row in range(height)]
+        special_options = [
+            "-","-","-","-","-",
+            "-","-","-","-","-",
+            "-","-","-","-","-",
+            "-","-","-","-","-",
+            "-","-","-","-","-",
+            "-","-","-","-","-",
+            "-","-","-","-","-",
+            "X","X","X",
+            "?","?","?",
+            "M","M",
+            "B","B","B","B","B","B",
+            "o","o",
+            #"T",
+            "E",
+        ]
+        g = [random.choices(special_options, k=width) for row in range(height)]
+        for x in range(1,width-1):
+            for y in range(height):
+                if g[y][x] == "T":
+                    if y < 8: g[y][x] == "-"
+                    else:
+                        i = y
+                        while i < 15:
+                            i += 1
+                            g[i][x] = "|"
+
         g[15][:] = ["X"] * width
         g[14][0] = "m"
         g[7][-1] = "v"
