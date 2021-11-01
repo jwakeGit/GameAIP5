@@ -105,7 +105,7 @@ class Individual_Grid(object):
                             genome[y][x] = "-"
                     elif genome[y][x] == "|":
                         i = y
-                        while genome[i][x] != "T": i -= 1
+                        while genome[i][x] != "T" and i > 0: i -= 1
                         if choice < 0.33:
                             genome[i-1][x] = "T"
                             genome[i][x] = "|"
