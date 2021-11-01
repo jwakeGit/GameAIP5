@@ -419,8 +419,7 @@ def generate_successors(population):
     randomly_chosen = random.choices(population, k=k_value)
     randomly_chosen = sorted(randomly_chosen, key=lambda population: population.fitness(), reverse=True)
     tournament_winner = randomly_chosen[0]
-
-    print("winners are", tournament_winner, roulette_winner)
+    
     if tournament_winner is not None and roulette_winner is not None:
         results.append(roulette_winner.generate_children(tournament_winner))
         results.append(tournament_winner.generate_children(roulette_winner))
