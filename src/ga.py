@@ -406,10 +406,12 @@ def generate_successors(population):
     for each in bias_dict.values():
         sum_of_fitnesses += each
     r = random.uniform(0, sum_of_fitnesses)
+    current = 0
     for key, value in bias_dict.items():
-        if value > r:
+        current += value
+        if current > r:
+            roulette_winner = key
             break
-        roulette_winner = key
 
     # Tournament Selection
     tournament_winner = None
@@ -418,9 +420,10 @@ def generate_successors(population):
     randomly_chosen = sorted(randomly_chosen, key=lambda population: population.fitness(), reverse=True)
     tournament_winner = randomly_chosen[0]
 
+    print("winners are", tournament_winner, roulette_winner)
     if tournament_winner is not None and roulette_winner is not None:
-        results.append(roulette_winner.generate_children(tournament_winner)[0])
-        results.append(tournament_winner.generate_children(roulette_winner)[0])
+        results.append(roulette_winner.generate_children(tournament_winner))
+        results.append(tournament_winner.generate_children(roulette_winner))
     return results
 
 
