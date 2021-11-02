@@ -100,6 +100,7 @@ class Individual_Grid(object):
                         if choice < 0.3 and left < x < width-3:
                             genome[y][x+1] = "B"
                             genome[y][x-1] = "B"
+                            genome[y+1][x] = "-"
                         elif choice < 0.7:
                             genome[y][x] = "-"
                         else: genome[y][x] = "M"
@@ -107,13 +108,14 @@ class Individual_Grid(object):
                         if choice < 0.3 and left < x < width-3:
                             genome[y][x+1] = "B"
                             genome[y][x-1] = "B"
+                            genome[y+1][x] = "-"
                         elif choice < 0.7:
                             genome[y][x] = "-"
                         else: genome[y][x] = "?"
                     elif genome[y][x] == "B":
                         if choice < 0.4 and left < x < width-3:
-                            genome[y][x+1] = "B"
-                            genome[y][x-1] = "B"
+                            genome[y][x+1] = "?"
+                            genome[y][x-1] = "?"
                         else:
                             genome[y][x] = "-"
                     elif genome[y][x] == "o":
@@ -146,18 +148,22 @@ class Individual_Grid(object):
                         genome[y][x] = "X"
                     elif random.random() < 0.1:
                         genome[y][x] = "X"
-                if x == left and genome[y][x-1] != "m" and genome[y][x-1] != "X":
+                if x == left and genome[y][x-1] != "m" and y != 15:
                     genome[y][x] = genome[y][x-1]
                     genome[y][0] = "-"
-                # if genome[y][x] == "T":
-                #     genome[y][x+1] == "-"
-                #     i = y
-                #     while i < 15:
-                #         i += 1
-                #         genome[i][x] = "|"
-                #         genome[i][x+1] = "-"
-                #     genome[15][x] = "X"
-                #     genome[15][x+1] = "X"
+                if genome[y][x] == "T":
+                    if y < 11: 
+                        genome[y][x] == "-"
+                        genome[y][x+1] == "-"
+                    else:
+                        genome[y][x+1] == "-"
+                        i = y
+                        while i < 15:
+                            i += 1
+                            genome[i][x] = "|"
+                            genome[i][x+1] = "-"
+                        genome[15][x] = "X"
+                        genome[15][x+1] = "X"
         return genome
 
     # Create zero or more children from self and other
@@ -212,9 +218,9 @@ class Individual_Grid(object):
             "-","-","-","-","-",
             "X","X","X","X","X","X",
             "X","X","X","X","X","X",
-            "?","?","?","?",
-            "M","M","M","M",
-            "B","B","B","B",
+            "?","?",
+            "M","M",
+            "B","B",
             "o","o","o","o",
             "T",
             "E","E"
@@ -222,9 +228,9 @@ class Individual_Grid(object):
         g = [random.choices(special_options, k=width) for row in range(height)]
         for x in range(1,width-1):
             for y in range(height):
-                if g[y][x] != "-" and y < 4 and x < width-3: g[y][x] = "-"
+                if g[y][x] != "-" and y < 6 and x < width-3: g[y][x] = "-"
                 if g[y][x] == "T":
-                    if y < 4: 
+                    if y < 10: 
                         g[y][x] == "-"
                         g[y][x+1] == "-"
                     else:
@@ -565,7 +571,7 @@ def ga():
                 # stop_condition = False
                 # if stop_condition:
                 #     break
-                if count > 100:
+                if count > 50:
                     break
                 # STUDENT Also consider using FI-2POP as in the Sorenson & Pasquier paper
                 gentime = time.time()
