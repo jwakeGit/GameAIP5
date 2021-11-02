@@ -81,6 +81,8 @@ class Individual_Grid(object):
         for y in range(height):
             for x in range(left, right):
                 if random.random() < 0.1:
+                    if genome[y][x+1] == ("T" or "|") or genome[y][x-2] == ("T" or "|"): 
+                        break
                     choice = random.random()
                     if y == 15 and x < width - 3:
                         if genome[y][x] != "-" and genome[y][x+1] != "-":
@@ -89,36 +91,36 @@ class Individual_Grid(object):
                                 genome[y-1][x] = "-"
                                 genome[y-2][x] = "-"
                     if genome[y][x] == "X" and y < 15:
-                        if choice < 0.33:
-                            new_x = offset_by_upto(x, width / 8, min=1, max=width - 5)
-                            genome[y][new_x] = genome[y][x]
+                        if choice < 0.4 and left < x < width-3 and 15 > y > 1:
+                            genome[y][x+1] = "X"
+                            genome[y][x-1] = "X"
+                        else:
                             genome[y][x] = "-"
-                        elif choice < 0.66:
-                            new_y = offset_by_upto(y, height / 2, min=0, max=height - 1)
-                            genome[new_y][x] = genome[y][x]
+                    elif genome[y][x] == "?":
+                        if choice < 0.3 and left < x < width-3:
+                            genome[y][x+1] = "B"
+                            genome[y][x-1] = "B"
+                        elif choice < 0.7:
                             genome[y][x] = "-"
-                    # elif genome[y][x] == "X":
-                    #     if choice < 0.5:
-                    #         genome[y][x] = "-"
-                    elif genome[y][x] == "?" or genome[y][x] == "M":
-                        if choice < 0.33:
-                            new_x = offset_by_upto(x, width / 8, min=1, max=width - 5)
-                            genome[y][new_x] = genome[y][x]
+                        else: genome[y][x] = "M"
+                    elif genome[y][x] == "M":
+                        if choice < 0.3 and left < x < width-3:
+                            genome[y][x+1] = "B"
+                            genome[y][x-1] = "B"
+                        elif choice < 0.7:
                             genome[y][x] = "-"
-                        elif choice < 0.66:
-                            new_y = offset_by_upto(y, height / 2, min=0, max=height - 1)
-                            genome[new_y][x] = genome[y][x]
+                        else: genome[y][x] = "?"
+                    elif genome[y][x] == "B":
+                        if choice < 0.4 and left < x < width-3:
+                            genome[y][x+1] = "B"
+                            genome[y][x-1] = "B"
+                        else:
                             genome[y][x] = "-"
-                        elif genome[y][x] == "?": genome[y][x] = "M"
-                        elif genome[y][x] == "M": genome[y][x] = "?"
                     elif genome[y][x] == "o":
-                        if choice < 0.33:
-                            new_x = offset_by_upto(x, width / 8, min=1, max=width - 5)
-                            genome[y][new_x] = genome[y][x]
-                            genome[y][x] = "-"
-                        elif choice < 0.33:
-                            new_y = offset_by_upto(y, height / 2, min=0, max=height - 1)
-                            genome[new_y][x] = genome[y][x]
+                        if choice < 0.4 and left < x < width-3:
+                            genome[y][x+1] = "o"
+                            genome[y][x-1] = "o"
+                        else:
                             genome[y][x] = "-"
                     # elif genome[y][x] == "|":
                     #     i = y
@@ -208,7 +210,6 @@ class Individual_Grid(object):
             "-","-","-","-","-",
             "-","-","-","-","-",
             "-","-","-","-","-",
-            "-","-","-","-","-",
             "X","X","X","X","X","X",
             "X","X","X","X","X","X",
             "?","?","?","?",
@@ -221,6 +222,7 @@ class Individual_Grid(object):
         g = [random.choices(special_options, k=width) for row in range(height)]
         for x in range(1,width-1):
             for y in range(height):
+                if g[y][x] != "-" and y < 4 and x < width-3: g[y][x] = "-"
                 if g[y][x] == "T":
                     if y < 4: 
                         g[y][x] == "-"
