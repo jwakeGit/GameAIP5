@@ -85,7 +85,7 @@ class Individual_Grid(object):
                         break
                     choice = random.random()
                     if y == 15 and x < width - 3:
-                        if genome[y][x] != "-" and genome[y][x+1] != "-":
+                        if genome[y][x] != "-": # and genome[y][x+1] != "-":
                             if choice < 0.02:
                                 genome[y][x] = "-"
                                 genome[y-1][x] = "-"
@@ -96,6 +96,12 @@ class Individual_Grid(object):
                             genome[y][x-1] = "X"
                         else:
                             genome[y][x] = "-"
+                    elif genome[y][x] == "-" and y == 15:
+                        if choice < 0.2:
+                            genome[y][x+1] = "-"
+                            genome[y][x-1] = "-"
+                        else:
+                            genome[y][x] = "X"
                     elif genome[y][x] == "?":
                         if choice < 0.3 and left < x < width-3:
                             genome[y][x+1] = "B"
@@ -152,9 +158,10 @@ class Individual_Grid(object):
                     genome[y][x] = genome[y][x-1]
                     genome[y][0] = "-"
                 if genome[y][x] == "T":
-                    if y < 11: 
+                    if y < 10: 
                         genome[y][x] == "-"
                         genome[y][x+1] == "-"
+                        genome[y][x+2] == "-"
                     else:
                         genome[y][x+1] == "-"
                         i = y
@@ -228,11 +235,16 @@ class Individual_Grid(object):
         g = [random.choices(special_options, k=width) for row in range(height)]
         for x in range(1,width-1):
             for y in range(height):
-                if g[y][x] != "-" and y < 6 and x < width-3: g[y][x] = "-"
-                if g[y][x] == "T":
+                if g[y][x] != "-":
+                    if y < 6 and x < width-3: 
+                        g[y][x] = "-"
+                    elif y < 8 and x < width-3 and random.random() < 0.66: 
+                        g[y][x] = "-"
+                if g[y][x] == "T" and x < width-3:
                     if y < 10: 
                         g[y][x] == "-"
                         g[y][x+1] == "-"
+                        g[y][x+2] == "-"
                     else:
                         g[y][x+1] == "-"
                         i = y
@@ -482,8 +494,7 @@ class Individual_DE(object):
         return Individual_DE(g)
 
 
-Individual = Individual_DE
-
+Individual = Individual_Grid
 
 def generate_successors(population):
     results = []
