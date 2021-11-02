@@ -49,11 +49,18 @@ class Individual_Grid(object):
             negativeSpace=0.6, # 0.6
             pathPercentage=0.5, # 0.5
             emptyPercentage=0.6, # 0.6
-            linearity=-0.5, # 0.5
+            linearity=1.0, # -0.5
             solvability=2.0 # 2.0
         )
+        penalties = 0
+        hole_count = 0
+        for x in range(width):
+            if self.genome[15][x] == "-":
+                hole_count += 1
+        if hole_count > 50:
+            penalties -= 3
         self._fitness = sum(map(lambda m: coefficients[m] * measurements[m],
-                                coefficients))
+                                coefficients)) + penalties
         return self
 
     # Return the cached fitness value or calculate it as needed.
@@ -76,38 +83,40 @@ class Individual_Grid(object):
                     choice = random.random()
                     if y == 15 and x < width - 3:
                         if genome[y][x] != "-" and genome[y][x+1] != "-":
-                            if random.random() < 0.02:
+                            if choice < 0.02:
                                 genome[y][x] = "-"
                                 genome[y-1][x] = "-"
                                 genome[y-2][x] = "-"
-                    """
-                    if genome[y][x] == "-":
-                        if choice < 0.05:
-                            if genome[y][x-1] == "X":
-                                genome[y][x-1] = "-"
-                                genome[y][x] = "X"
-                            elif genome[y][x+1] == "X":
-                                genome[y][x+1] = "-"
-                                genome[y][x] = "X"
-                    """
-                    if genome[y][x] == "?" or genome[y][x] == "M":
+                    if genome[y][x] == "X" and y < 15:
                         if choice < 0.33:
-                            new_x = offset_by_upto(x, width / 8, min=1, max=width - 2)
+                            new_x = offset_by_upto(x, width / 8, min=1, max=width - 5)
                             genome[y][new_x] = genome[y][x]
                             genome[y][x] = "-"
                         elif choice < 0.66:
-                            new_y = offset_by_upto(y, height / 2, min=0, max=height - 2)
+                            new_y = offset_by_upto(y, height / 2, min=0, max=height - 1)
+                            genome[new_y][x] = genome[y][x]
+                            genome[y][x] = "-"
+                    elif genome[y][x] == "X":
+                        if choice < 0.5:
+                            genome[y][x] = "-"
+                    elif genome[y][x] == "?" or genome[y][x] == "M":
+                        if choice < 0.33:
+                            new_x = offset_by_upto(x, width / 8, min=1, max=width - 5)
+                            genome[y][new_x] = genome[y][x]
+                            genome[y][x] = "-"
+                        elif choice < 0.66:
+                            new_y = offset_by_upto(y, height / 2, min=0, max=height - 1)
                             genome[new_y][x] = genome[y][x]
                             genome[y][x] = "-"
                         elif genome[y][x] == "?": genome[y][x] = "M"
                         elif genome[y][x] == "M": genome[y][x] = "?"
                     elif genome[y][x] == "o":
                         if choice < 0.5:
-                            new_x = offset_by_upto(x, width / 8, min=1, max=width - 2)
+                            new_x = offset_by_upto(x, width / 8, min=1, max=width - 5)
                             genome[y][new_x] = genome[y][x]
                             genome[y][x] = "-"
                         else:
-                            new_y = offset_by_upto(y, height / 2, min=0, max=height - 2)
+                            new_y = offset_by_upto(y, height / 2, min=0, max=height - 1)
                             genome[new_y][x] = genome[y][x]
                             genome[y][x] = "-"
                     # elif genome[y][x] == "|":
@@ -119,30 +128,46 @@ class Individual_Grid(object):
                     #     elif choice < 0.66:
                     #         genome[i+1][x] = "T"
                     #         genome[i][x] = "-"
-                    elif genome[y][x] == "T":
-                        if y > 8 and choice < 0.66:
-                            genome[y-1][x] = "T"
-                            genome[y][x] = "|"
-                        else:
-                            genome[y+1][x] = "T"
-                            genome[y][x] = "-"
+                    # elif genome[y][x] == "T":
+                    #     if choice < 0.5 and y > 1:
+                    #         genome[y-1][x] = "T"
+                    #         genome[y][x] = "|"
+                    #         genome[y-1][x+1] = "-"
+                    #         genome[y][x+1] = "-"
+                    #     elif y < 14:
+                    #         genome[y+1][x] = "T"
+                    #         genome[y][x] = "-"
+                    #         genome[y+1][x+1] = "-"
+                if y == 15:
+                    if x <= left+5 or right-5 <= x:
+                        genome[y][x] = "X"
+                    elif random.random() < 0.1:
+                        genome[y][x] = "X"
+                if x == left:
+                    genome[y][x+1] = genome[y][x]
+                    genome[y][x] = "-"
         return genome
 
     # Create zero or more children from self and other
     def generate_children(self, other):
         new_genome = copy.deepcopy(self.genome)
+        new_genomeb = copy.deepcopy(other.genome)
         # Leaving first and last columns alone...
         # do crossover with other
         left = 1
         right = width - 1
         rand_interval = random.randint(left, right)
         for x in range(left, right):
-            for y in range(height): 
-                if x < rand_interval: new_genome[y][x] = self.genome[y][x]
-                else: new_genome[y][x] = other.genome[y][x]
+            for y in range(height):
+                if x < rand_interval:
+                    new_genome[y][x] = self.genome[y][x]
+                    new_genomeb[y][x] = other.genome[y][x]
+                else:
+                    new_genome[y][x] = other.genome[y][x]
+                    new_genomeb[y][x] = self.genome[y][x]
         # do mutation; note we're returning a one-element tuple here
         #mutate()
-        return (Individual_Grid(self.mutate(new_genome)))
+        return (Individual_Grid(self.mutate(new_genome)), Individual_Grid(self.mutate(new_genomeb)))
 
     # Turn the genome into a level string (easy for this genome)
     def to_level(self):
@@ -174,13 +199,18 @@ class Individual_Grid(object):
             "-","-","-","-","-",
             "-","-","-","-","-",
             "-","-","-","-","-",
+            "-","-","-","-","-",
+            "-","-","-","-","-",
+            "-","-","-","-","-",
+            "-","-","-","-","-",
+            "-","-","-","-","-",
             "X","X","X",
             "?","?","?",
             "M","M",
-            "B","B","B","B","B","B",
-            "o","o",
-            #"T",
-            "E",
+            "B","B","B","B",
+            "o","o","o","o","o","o",
+            "T",
+            "E","E"
         ]
         g = [random.choices(special_options, k=width) for row in range(height)]
         for x in range(1,width-1):
@@ -188,13 +218,17 @@ class Individual_Grid(object):
                 if g[y][x] == "T":
                     if y < 8: g[y][x] == "-"
                     else:
+                        g[y][x+1] == "-"
                         i = y
                         while i < 15:
                             i += 1
                             g[i][x] = "|"
+                            g[i][x+1] = "-"
 
         g[15][:] = ["X"] * width
         g[14][0] = "m"
+        for i in range(13):
+            g[i][-1] = "-"
         g[7][-1] = "v"
         g[8:14][-1] = ["f"] * 6
         g[14:16][-1] = ["X", "X"]
@@ -239,9 +273,9 @@ class Individual_DE(object):
         # STUDENT Improve this with any code you like
         coefficients = dict(
             meaningfulJumpVariance=0.5,
-            negativeSpace=0.6,
+            negativeSpace=-0.5,
             pathPercentage=0.5,
-            emptyPercentage=0.6,
+            emptyPercentage=-0.5,
             linearity=-0.5,
             solvability=2.0
         )
@@ -249,6 +283,10 @@ class Individual_DE(object):
         # STUDENT For example, too many stairs are unaesthetic.  Let's penalize that
         if len(list(filter(lambda de: de[1] == "6_stairs", self.genome))) > 5:
             penalties -= 2
+        if len(list(filter(lambda de: de[1] == "2_enemy", self.genome))) > 5:
+            penalties += 2
+        if len(self.genome) < 30: penalties -= 5
+        elif len(self.genome) < 60: penalties -= 1
         # STUDENT If you go for the FI-2POP extra credit, you can put constraint calculation in here too and cache it in a new entry in __slots__.
         self._fitness = sum(map(lambda m: coefficients[m] * measurements[m],
                                 coefficients)) + penalties
@@ -341,6 +379,8 @@ class Individual_DE(object):
 
     def generate_children(self, other):
         # STUDENT How does this work?  Explain it in your writeup.
+        if len(self.genome) < 1 or len(other.genome) < 1: 
+            return Individual_DE(self.mutate(self.genome)), Individual_DE(self.mutate(other.genome))
         pa = random.randint(0, len(self.genome) - 1)
         pb = random.randint(0, len(other.genome) - 1)
         a_part = self.genome[:pa] if len(self.genome) > 0 else []
@@ -406,7 +446,7 @@ class Individual_DE(object):
     @classmethod
     def random_individual(_cls):
         # STUDENT Maybe enhance this
-        elt_count = random.randint(8, 128)
+        elt_count = random.randint(75, 128)
         g = [random.choice([
             (random.randint(1, width - 2), "0_hole", random.randint(1, 8)),
             (random.randint(1, width - 2), "1_platform", random.randint(1, 8), random.randint(0, height - 1), random.choice(["?", "X", "B"])),
@@ -456,8 +496,12 @@ def generate_successors(population):
     tournament_winner = randomly_chosen[0]
     
     if tournament_winner is not None and roulette_winner is not None:
-        results.append(roulette_winner.generate_children(tournament_winner))
-        results.append(tournament_winner.generate_children(roulette_winner))
+        for result in roulette_winner.generate_children(tournament_winner):
+            results.append(result)
+        for result in tournament_winner.generate_children(roulette_winner):
+            results.append(result)
+        # results.append(roulette_winner.generate_children(tournament_winner))
+        # results.append(tournament_winner.generate_children(roulette_winner))
     return results
 
 
@@ -472,7 +516,7 @@ def ga():
     with mpool.Pool(processes=os.cpu_count()) as pool:
         init_time = time.time()
         # STUDENT (Optional) change population initialization
-        population = [Individual.random_individual() if random.random() < 0.9
+        population = [Individual.random_individual() if random.random() < 999
                       else Individual.empty_individual()
                       for _g in range(pop_limit)]
         # But leave this line alone; we have to reassign to population because we get a new population that has more cached stuff in it.
@@ -486,7 +530,9 @@ def ga():
         now = start
         print("Use ctrl-c to terminate this loop manually.")
         try:
+            count = 0
             while True:
+                count += 1
                 now = time.time()
                 # Print out statistics
                 if generation > 0:
@@ -500,8 +546,10 @@ def ga():
                             f.write("".join(row) + "\n")
                 generation += 1
                 # STUDENT Determine stopping condition
-                stop_condition = False
-                if stop_condition:
+                # stop_condition = False
+                # if stop_condition:
+                #     break
+                if count > 100:
                     break
                 # STUDENT Also consider using FI-2POP as in the Sorenson & Pasquier paper
                 gentime = time.time()
