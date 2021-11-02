@@ -50,15 +50,16 @@ class Individual_Grid(object):
             pathPercentage=0.5, # 0.5
             emptyPercentage=0.6, # 0.6
             linearity=1.0, # -0.5
-            solvability=2.0 # 2.0
+            solvability=5.0 # 2.0
         )
         penalties = 0
         hole_count = 0
         for x in range(width):
             if self.genome[15][x] == "-":
                 hole_count += 1
-        if hole_count > 50:
-            penalties -= 3
+        
+        if hole_count > 100:
+            penalties -= 2
         self._fitness = sum(map(lambda m: coefficients[m] * measurements[m],
                                 coefficients)) + penalties
         return self
@@ -79,7 +80,7 @@ class Individual_Grid(object):
         right = width - 1
         for y in range(height):
             for x in range(left, right):
-                if random.random() < 0.3:
+                if random.random() < 0.1:
                     choice = random.random()
                     if y == 15 and x < width - 3:
                         if genome[y][x] != "-" and genome[y][x+1] != "-":
@@ -96,9 +97,9 @@ class Individual_Grid(object):
                             new_y = offset_by_upto(y, height / 2, min=0, max=height - 1)
                             genome[new_y][x] = genome[y][x]
                             genome[y][x] = "-"
-                    elif genome[y][x] == "X":
-                        if choice < 0.5:
-                            genome[y][x] = "-"
+                    # elif genome[y][x] == "X":
+                    #     if choice < 0.5:
+                    #         genome[y][x] = "-"
                     elif genome[y][x] == "?" or genome[y][x] == "M":
                         if choice < 0.33:
                             new_x = offset_by_upto(x, width / 8, min=1, max=width - 5)
@@ -111,11 +112,11 @@ class Individual_Grid(object):
                         elif genome[y][x] == "?": genome[y][x] = "M"
                         elif genome[y][x] == "M": genome[y][x] = "?"
                     elif genome[y][x] == "o":
-                        if choice < 0.5:
+                        if choice < 0.33:
                             new_x = offset_by_upto(x, width / 8, min=1, max=width - 5)
                             genome[y][new_x] = genome[y][x]
                             genome[y][x] = "-"
-                        else:
+                        elif choice < 0.33:
                             new_y = offset_by_upto(y, height / 2, min=0, max=height - 1)
                             genome[new_y][x] = genome[y][x]
                             genome[y][x] = "-"
@@ -143,9 +144,18 @@ class Individual_Grid(object):
                         genome[y][x] = "X"
                     elif random.random() < 0.1:
                         genome[y][x] = "X"
-                if x == left:
-                    genome[y][x+1] = genome[y][x]
-                    genome[y][x] = "-"
+                if x == left and genome[y][x-1] != "m" and genome[y][x-1] != "X":
+                    genome[y][x] = genome[y][x-1]
+                    genome[y][0] = "-"
+                # if genome[y][x] == "T":
+                #     genome[y][x+1] == "-"
+                #     i = y
+                #     while i < 15:
+                #         i += 1
+                #         genome[i][x] = "|"
+                #         genome[i][x+1] = "-"
+                #     genome[15][x] = "X"
+                #     genome[15][x+1] = "X"
         return genome
 
     # Create zero or more children from self and other
@@ -199,16 +209,12 @@ class Individual_Grid(object):
             "-","-","-","-","-",
             "-","-","-","-","-",
             "-","-","-","-","-",
-            "-","-","-","-","-",
-            "-","-","-","-","-",
-            "-","-","-","-","-",
-            "-","-","-","-","-",
-            "-","-","-","-","-",
-            "X","X","X",
-            "?","?","?",
-            "M","M",
+            "X","X","X","X","X","X",
+            "X","X","X","X","X","X",
+            "?","?","?","?",
+            "M","M","M","M",
             "B","B","B","B",
-            "o","o","o","o","o","o",
+            "o","o","o","o",
             "T",
             "E","E"
         ]
@@ -216,7 +222,9 @@ class Individual_Grid(object):
         for x in range(1,width-1):
             for y in range(height):
                 if g[y][x] == "T":
-                    if y < 8: g[y][x] == "-"
+                    if y < 4: 
+                        g[y][x] == "-"
+                        g[y][x+1] == "-"
                     else:
                         g[y][x+1] == "-"
                         i = y
@@ -224,14 +232,20 @@ class Individual_Grid(object):
                             i += 1
                             g[i][x] = "|"
                             g[i][x+1] = "-"
+                        g[15][x] = "X"
+                        g[15][x+1] = "X"
 
         g[15][:] = ["X"] * width
         g[14][0] = "m"
         for i in range(13):
-            g[i][-1] = "-"
+            g[i][0] = "-"
         g[7][-1] = "v"
-        g[8:14][-1] = ["f"] * 6
-        g[14:16][-1] = ["X", "X"]
+        for col in range(8, 14):
+            g[col][-1] = "f"
+        for col in range(14, 16):
+            g[col][-1] = "X"
+        # g[8:14][-1] = ["f"] * 6
+        # g[14:16][-1] = ["X", "X"]
         return cls(g)
 
 
