@@ -161,7 +161,6 @@ class Individual_Grid(object):
                     if y < 10: 
                         genome[y][x] == "-"
                         genome[y][x+1] == "-"
-                        genome[y][x+2] == "-"
                     else:
                         genome[y][x+1] == "-"
                         i = y
@@ -244,7 +243,6 @@ class Individual_Grid(object):
                     if y < 10: 
                         g[y][x] == "-"
                         g[y][x+1] == "-"
-                        g[y][x+2] == "-"
                     else:
                         g[y][x+1] == "-"
                         i = y
